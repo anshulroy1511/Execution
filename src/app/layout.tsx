@@ -32,12 +32,12 @@ export default function RootLayout({
       >
         <header>
           <div>
-          <SignedOut>
+          {/* <SignedOut>
               <SignInButton />
             </SignedOut>
             <SignedIn>
               <UserButton />
-            </SignedIn>
+            </SignedIn> */}
           </div>
       
         </header>
