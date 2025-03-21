@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid } from "recharts";
+
 
 export default function Anshul() {
   const [singleTransaction, setSingleTransaction] = useState({
@@ -20,8 +22,8 @@ export default function Anshul() {
   const [singleResult, setSingleResult] = useState<string | null>(null);
   const [batchResult, setBatchResult] = useState<any | null>(null);
   const [reportResult, setReportResult] = useState<string | null>(null);
+  const [dashboardData, setDashboardData] = useState([]);
 
-  // Handle input changes
   const handleSingleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setSingleTransaction({ ...singleTransaction, [e.target.name]: e.target.value });
   };
@@ -34,119 +36,78 @@ export default function Anshul() {
     setReportFraudData({ ...reportFraudData, [e.target.name]: e.target.value });
   };
 
-  // ✅ Function to check a single transaction
-  const analyzeSingleTransaction = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (url: string, payload: any, setResult: any) => {
     try {
-      const response = await fetch("http://localhost:3000/backend/api/fraudDetection", {
+      const response = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(singleTransaction),
+        body: JSON.stringify(payload),
       });
       const data = await response.json();
-      setSingleResult(JSON.stringify(data, null, 2));
+      setResult(JSON.stringify(data, null, 2));
     } catch (error) {
-      setSingleResult("Error checking transaction ❌");
+      setResult("Error processing request ❌");
     }
   };
-
-  // ✅ Function to analyze batch transactions
-  const analyzeBatchTransactions = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const parsedTransactions = JSON.parse(batchTransactions);
-      const response = await fetch("/backend/api/fraudDetectionBatch", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ transactions: parsedTransactions }),
-      });
-      const data = await response.json();
-      setBatchResult(JSON.stringify(data, null, 2));
-    } catch (error) {
-      setBatchResult("Error processing batch transactions ❌");
-    }
-  };
-
-  // ✅ Function to report fraud
-  const reportFraud = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-        // ✅ Fetch the transaction details first using GET request
-        const transactionResponse = await fetch(`http://localhost:3000/backend/api/fraudDetection?transaction_id=${reportFraudData.transaction_id}`, {
-            method: "GET",
-            headers: { "Content-Type": "application/json" }
-        });
-
-        const transactionData = await transactionResponse.json();
-
-        if (!transactionData.transaction_data) {
-            setReportResult("Transaction not found ❌");
-            return;
-        }
-
-        // ✅ Send fraud report request
-        const requestData = {
-            transaction_id: reportFraudData.transaction_id,
-            reporting_entity_id: reportFraudData.reporting_entity_id,
-            fraud_details: reportFraudData.fraud_details,
-            transaction_data: transactionData.transaction_data // ✅ Use fetched transaction data
-        };
-
-        const response = await fetch("http://localhost:3000/backend/api/fraudReport", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(requestData),
-        });
-
-        const data = await response.json();
-        setReportResult(JSON.stringify(data, null, 2));
-    } catch (error) {
-        setReportResult("Error reporting fraud ❌");
-    }
-};
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
-      <h1 className="text-3xl font-bold mb-6">🚀 Fraud Detection System</h1>
-
-      {/* Single Transaction Check */}
-      <div className="bg-white p-6 rounded shadow-md w-96 mb-6">
-        <h2 className="text-lg font-bold mb-4">🔍 Check Single Transaction</h2>
-        <form onSubmit={analyzeSingleTransaction}>
-          <input type="text" name="transaction_id" placeholder="Transaction ID" className="border p-2 w-full mb-2" onChange={handleSingleChange} required />
-          <input type="number" name="amount" placeholder="Amount" className="border p-2 w-full mb-2" onChange={handleSingleChange} required />
-          <select name="transaction_type" className="border p-2 w-full mb-2" onChange={handleSingleChange}>
-            <option value="">Select Transaction Type</option>
-            <option value="wire_transfer">Wire Transfer</option>
-            <option value="credit_card">Credit Card</option>
-          </select>
-          <input type="text" name="payer_id" placeholder="Payer ID" className="border p-2 w-full mb-4" onChange={handleSingleChange} required />
-          <button className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Analyze Transaction</button>
-        </form>
-        {singleResult && <pre className="mt-4 p-2 bg-gray-200 text-sm rounded">{singleResult}</pre>}
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center p-6">
+      <h1 className="text-4xl font-extrabold text-gray-800 mb-8">🚀 Fraud Detection System</h1>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 w-full max-w-6xl">
+        {/* Card Component */}
+        {[
+          { title: "🔍 Single Transaction", action: () => handleSubmit("/api/fraud", singleTransaction, setSingleResult), result: singleResult, data: singleTransaction, handler: handleSingleChange },
+          { title: "📊 Batch Transactions", action: () => handleSubmit("/api/batchFraud", { transactions: JSON.parse(batchTransactions) }, setBatchResult), result: batchResult, data: batchTransactions, handler: handleBatchChange },
+          { title: "⚠ Report Fraud", action: () => handleSubmit("/api/reportFraud", reportFraudData, setReportResult), result: reportResult, data: reportFraudData, handler: handleReportChange },
+        ].map(({ title, action, result, handler }, index) => (
+          <div key={index} className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition w-full">
+            <h2 className="text-2xl font-semibold mb-4">{title}</h2>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                action();
+              }}
+              className="space-y-4"
+            >
+              {Object.keys(singleTransaction).map((key) => (
+                <input
+                  key={key}
+                  type="text"
+                  name={key}
+                  placeholder={key.replace(/_/g, ' ').toUpperCase()}
+                  className="w-full p-2 border border-gray-300 rounded focus:ring focus:ring-blue-300 focus:outline-none"
+                  onChange={handler}
+                />
+              ))}
+              <button
+                type="submit"
+                className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+              >
+                Submit
+              </button>
+            </form>
+            {result && (
+              <pre className="mt-4 p-2 bg-gray-100 border rounded text-sm overflow-auto max-h-40">{result}</pre>
+            )}
+          </div>
+        ))}
       </div>
 
-      {/* Batch Fraud Detection */}
-      <div className="bg-white p-6 rounded shadow-md w-96 mb-6">
-        <h2 className="text-lg font-bold mb-4">📊 Batch Fraud Detection</h2>
-        <form onSubmit={analyzeBatchTransactions}>
-          <textarea name="batchTransactions" placeholder="Enter JSON array of transactions" className="border p-2 w-full mb-4 h-32" onChange={handleBatchChange}></textarea>
-          <button className="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700">Analyze Batch</button>
-        </form>
-        {batchResult && <pre className="mt-4 p-2 bg-gray-200 text-sm rounded">{batchResult}</pre>}
-      </div>
-
-      {/* Report Fraud */}
-      <div className="bg-white p-6 rounded shadow-md w-96">
-        <h2 className="text-lg font-bold mb-4">⚠ Report Fraud</h2>
-        <form onSubmit={reportFraud}>
-          <input type="text" name="transaction_id" placeholder="Transaction ID" className="border p-2 w-full mb-2" onChange={handleReportChange} required />
-          <input type="text" name="reporting_entity_id" placeholder="Reporting Entity ID" className="border p-2 w-full mb-2" onChange={handleReportChange} required />
-          <textarea name="fraud_details" placeholder="Describe fraud" className="border p-2 w-full mb-4 h-20" onChange={handleReportChange} required></textarea>
-          <button className="w-full bg-red-600 text-white p-2 rounded hover:bg-red-700">Report Fraud</button>
-        </form>
-        {reportResult && <pre className="mt-4 p-2 bg-gray-200 text-sm rounded">{reportResult}</pre>}
-      </div>
+      {/* Charts Section */}
+      <div className="bg-white p-6 mt-10 rounded-lg shadow-lg hover:shadow-xl transition w-full col-span-full mb-40">
+          <h2 className="text-2xl font-semibold mb-4">📈 Fraud Analysis Overview</h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={dashboardData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="fraudulentTransactions" stroke="#FF0000" strokeWidth={2} />
+              <Line type="monotone" dataKey="totalTransactions" stroke="#00C49F" strokeWidth={2} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
     </div>
   );
 }

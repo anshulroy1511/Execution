@@ -13,7 +13,10 @@ export default function Home() {
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@48,400,1,0"
         />
       </Head>
+      <span className="z-50">
       <ChatBot />
+      </span>
+      
       <Anshul/>
     </div>
   );
