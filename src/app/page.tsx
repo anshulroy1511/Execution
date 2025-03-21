@@ -1,6 +1,7 @@
 import Image from "next/image";
-import ChatBot from "./ChatBot/page";
+import ChatBot from "./frontend/ChatBot/page";
 import Head from "next/head";
+import Anshul from "./frontend/page";
 
 export default function Home() {
   return (
@@ -13,6 +14,7 @@ export default function Home() {
         />
       </Head>
       <ChatBot />
+      <Anshul/>
     </div>
   );
 }
