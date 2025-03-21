@@ -132,12 +132,6 @@
   font-family: "Inter", sans-serif;
 }
 
-body {
-  width: 100;
-  min-height: 100vh;
-  background: linear-gradient(#f4f0ff, #dacdff);
-}
-
 #chatbot-toggler {
   position:fixed;
   bottom: 30px;

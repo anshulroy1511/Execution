@@ -1,5 +1,5 @@
 import Image from "next/image";
-import ChatBot from "./ChatBot/page";
+import ChatBot from "./frontend/ChatBot/page";
 import Head from "next/head";
 
 export default function Home() {

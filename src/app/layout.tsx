@@ -31,9 +31,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <header>
-          <div>
+          <div className="flex cursor-pointer mt-3 ml-5">
           <SignedOut>
-              <SignInButton />
+              <span className="p-2 bg-amber-600 border-2 border-black">
+                <SignInButton />
+              </span>
             </SignedOut>
             <SignedIn>
               <UserButton />

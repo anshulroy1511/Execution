@@ -1,4 +1,5 @@
 "use client"
+import { ArrowUp } from "lucide-react";
 import React, { useRef } from "react";
 
 type ChatbotFormProps = {
@@ -46,7 +47,11 @@ const Chatbotform: React.FC<ChatbotFormProps> = ({ chatHistory, setChatHistory, 
         required
         className="message-input"
       />
-      <button className="material-symbols-rounded">arrow_upward</button>
+      <button className="material-symbols-rounded">
+        <span className="flex items-center justify-center">
+          <ArrowUp/>
+        </span>
+      </button>
     </form>
   );
 };
